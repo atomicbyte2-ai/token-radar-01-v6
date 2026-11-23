@@ -21,7 +21,7 @@ nav a.on{background:var(--s2);color:var(--tx);border-color:var(--ln)}nav em{font
 .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:8px}
 .kpi{background:var(--s1);border:1px solid var(--ln);border-radius:7px;padding:7px 10px}
 .kpi.hi{border-top:2px solid var(--am)}.kpi.gr{border-top:2px solid var(--gr)}
-.kpi h4,.dk h4,.dkp h4{margin:0;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mu);font-weight:600}
+.kpi h4,.dk h4,.dkp h4,.rk3 h4{margin:0;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mu);font-weight:600}
 .kv{font:600 20px var(--mono);white-space:nowrap;margin:2px 0}.kv small{display:inline;font-size:12px}.kv .g{color:var(--gr)}
 .kpi p{margin:0;color:var(--mu);font-size:10.5px;line-height:1.3}
 .ledger{background:var(--s1);border:1px solid var(--ln);border-radius:7px;padding:7px 10px;margin-bottom:8px}
@@ -83,7 +83,7 @@ tr.exp>td{background:#0d131a;padding:4px 10px 8px;white-space:normal;text-align:
 .drk{font:700 30px var(--mono);color:var(--vi)}.drk small{font-size:10.5px;font-weight:400}
 .dn h2{margin:0;font-size:22px}.dn p{margin:2px 0 0;color:var(--mu)}.dn{flex:1}
 .dk{min-width:250px}.big{font:700 24px var(--mono);color:var(--tx);display:block}
-.dkp{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:8px}.dkp div{background:var(--s1);border:1px solid var(--ln);border-radius:7px;padding:6px 10px}.dkp b{font:600 16px var(--mono)}
+.dkp{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:8px}.rk3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.dkp div,.rk3 div{background:var(--s1);border:1px solid var(--ln);border-radius:7px;padding:6px 10px}.dkp b,.rk3 b{font:600 16px var(--mono)}
 .dgrid{display:grid;grid-template-columns:5fr 6fr;gap:10px}.dgrid .card{margin-bottom:8px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .grid td,.grid th{text-align:center!important}
@@ -93,3 +93,4 @@ tr.exp>td{background:#0d131a;padding:4px 10px 8px;white-space:normal;text-align:
 .fixed{table-layout:fixed}.fixed th{white-space:normal;line-height:1.15;vertical-align:bottom}.fixed td{overflow:hidden;text-overflow:ellipsis}.fixed .strip{width:100%}
 .hb{fill:var(--vi)}.nb{fill:#3a3566}
 .board:not(.fixed) th:first-child{text-align:left}
+.nbr td:nth-child(2),.nbr th:nth-child(2){text-align:left}

@@ -79,6 +79,10 @@ function selfCheck(): void {
     for (const name of snap.protocols.map((p: any) => p.name)) if (name.length > 4 && f.endsWith('.js') && t.includes(`'${name}'`)) check(false, `${f} hardcodes ${name}`);
   }
   check(total <= 62000, `dashboard ${total} B > 62,000 B`);
+  const app = readFileSync(join(dash, 'app.js'), 'utf8');
+  check(app.includes(`data-act="json"`) && app.includes('application/json'), 'dashboard has no JSON export of the filtered board');
+  check(/RD\.quant\(lc,\.05\)/.test(app), 'comparables do not use the 5% winsor band of the value fit');
+  console.log(`dashboard ${total} B of 62,000 B budget`);
   const shots = join(out, 'screenshots');
   if (existsSync(shots)) {
     const names = readdirSync(shots).filter((n) => !n.startsWith('.')).sort();
@@ -86,6 +90,7 @@ function selfCheck(): void {
     for (const n of names) {
       const b = readFileSync(join(shots, n)), dim = jpegSize(b);
       check(b.length <= 524288, `${n} ${b.length} B > 512 KiB`);
+      check(b.length >= 280e3 && b.length <= 340e3, `${n} ${b.length} B outside the 280–340 KB band`);
       check(!!dim && Math.max(dim[0], dim[1]) >= 1440 && Math.min(dim[0], dim[1]) >= 800, `${n} size ${dim}`);
     }
   }
