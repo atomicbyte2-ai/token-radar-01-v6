@@ -4,53 +4,55 @@
 [![rank](https://make.fun/badge/token-radar-01/atomicbyte2-ai/token-radar-01-v6/rank.svg)](https://make.fun/bounty/token-radar-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
 [![reward](https://make.fun/badge/token-radar-01/atomicbyte2-ai/token-radar-01-v6/reward.svg)](https://make.fun/bounty/token-radar-01?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
 
-A token launch radar for a DefiLlama snapshot: every protocol is accounted for, the ones that record
-no token are ranked by an implied value fitted on the snapshot itself, and each ranked protocol gets a
-dated farm plan with a cost and a time on every step.
+A radar for DeFi protocols that have **no token yet**. From one DefiLlama snapshot
+(no network) it ranks every pre-token protocol by an **implied value** and gives each
+one a costed, timed **farm plan** with a FARM / MARGINAL / SKIP verdict.
 
-## What it does
+## How the number is made
 
-- `ledger()` puts all protocols in exactly one group: ranked (watchlist, early below the floor,
-  off-list above it), token trades (priced peers), token recorded without a usable cap, or set aside
-  (bridges, liquid staking / restaking, exchanges, products whose name points to a parent).
-- `fitValue()` fits log market cap on the priced peers with a robust (Huber IRLS) ridge regression
-  and adds candidate terms stepwise: chain count, years listed, category effect, 7-day growth and a
-  7-day carry of TVL. A term is kept only if it lowers the median held-out miss in both
-  leave-one-out and walk-forward tests (peers listed earlier predict those listed later).
-- `fitOdds()` is an L2 logistic regression (Newton, fixed iterations) of "records a token" on years
-  listed, category family, 7-day growth, size and chain count, scored by Brier in ten-fold and
-  walk-forward tests against the base rate.
-- `impliedValue()` = launch value × launch odds. `calibrate()` sets P25–P75 and P10–P90 bands from
-  held-out misses and scores their coverage on the half not used to set them.
-- `bootstrap()` refits both models 200 times (fixed-seed mulberry32) for coefficient errors and
-  rank ranges.
-- `farmPlan()` / `minDeposit()` build a protocol-specific plan per row: verify contracts, fund, enter
-  (by category and cheapest chain), record, risk cap, weekly monitoring, an exit rule from the
-  snapshot's own 7-day change distribution, exit, and an all-in budget. The deposit is the smallest
-  rung of a ladder that clears $25/h after gas, bridge fees and the forgone 4% T-bill.
-
-All model and plan code lives in `dashboard/radar.js`. `main.ts` loads that same file, so the page
-refits the model in the browser and checks it against what `main.ts` wrote (row-by-row and a
-checksum chip). No protocol names are hardcoded; there is no network access and no clock.
+- **Implied value = launch value × launch odds**, whole dollars, ranks never rise.
+- `ledger()` puts all 758 protocols in exactly one group: ranked (watchlist, early
+  below the floor, off-list above it), token trades (priced peers), token without a
+  usable cap, and set aside (bridges, liquid (re)staking, exchanges, parent-named products).
+- `fitValue()` – Huber-weighted ridge on log market cap of the 88 traded peers.
+  Terms are kept only if they lower **both** leave-one-out and walk-forward miss:
+  the 7-day carry of TVL survives (×2.21 walk-forward vs ×4.58 flat).
+- `fitOdds()` – L2 logistic “records a token” over 507 stand-alone protocols, same
+  two-test stepwise: years listed, category, 7-day growth and size kept
+  (Brier 0.182 vs 0.242 base, walk-forward 0.227 vs 0.291).
+- `calibrate()` – P25–P75 / P10–P90 bands from held-out misses, scored on data that
+  did not set them; `bootstrap()` – 200 seeded refits give each row a rank range.
+- `farmPlan()` / `minDeposit()` – 3–12 steps with cost and minutes each (gas, bridge,
+  forgone 4% T-bill), at the smallest deposit rung that clears $25/hour.
 
 ## Run
 
 ```sh
-node main.ts                                   # reads /input/snapshot.json, writes /output
-node main.ts --input snapshot.json             # another snapshot
-MAKEFUN_OUTPUT_DIR=/tmp/out node main.ts --input snapshot.json
+node main.ts --input /input/snapshot.json      # writes to /output
+MAKEFUN_OUTPUT_DIR=/tmp/out node main.ts --input ./snapshot.json
 ```
 
-Node 22+, standard library only. Output: `board.json`, `data.js`, `dashboard/`, `screenshots/`,
-`dossier.json`. `main.ts` ends with a self-check of every gate rule (row count, ranks, values,
-watchlist coverage, step lengths, dashboard size and links, screenshot sizes, dossier cap) and exits
-non-zero if any fails. Two runs write byte-identical files.
+Node stdlib only, deterministic (byte-identical across runs). It writes
+`board.json`, `data.js`, `dashboard/`, `screenshots/` and finally `dossier.json`,
+and self-checks every gate (rows, ranks, values, watchlist, steps, dashboard size,
+no remote URLs, screenshots, dossier cap) – any failure exits non-zero.
 
-Open `/output/dashboard/index.html` in a browser. Views: `#` board, `#p=<slug>` detail,
-`#tab=trades`, `#tab=aside`, and filters such as `#verdict=FARM&sort=nethour&open=<slug>`.
+Open `dashboard/index.html` from the output folder. The page refits the whole model
+in the browser from `data.js` with the same `radar.js` and shows the checksum match.
 
-## Caveats
+- `#` board · `#p=<slug>&weeks=8` detail · `#verdict=FARM&sort=nethour&open=<slug>`
+- Sort any header, filter verdict / tier / category / chain, drop-share and horizon
+  sliders, CSV / JSON export of the filtered rows.
 
-A protocol that records no token on DefiLlama may never launch one. Odds are the share of
-comparable protocols that record a token, not a forecast. Gas, bridge fee, drop share and T-bill
-rate are stated assumptions you can change on the page.
+Farm plans are estimates from public numbers, not advice: a protocol may never
+launch a token, and contract and depeg risk stay with you.
+
+## Files
+
+- `main.ts` – runner, writer and gate checks
+- `dashboard/radar.js` – the model (shared by Node and the browser)
+- `dashboard/app.js`, `app.css`, `index.html` – the page
+- `vendor/makefun-board.ts` – organiser's dossier library (unchanged)
+- `screenshots/` – three real 1440×1440 renders
+
+MIT licence, see `LICENSE`.
